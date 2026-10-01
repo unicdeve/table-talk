@@ -20,3 +20,10 @@ Run these ten conversations once configured. Record browser, device, date, compl
 Also manually verify denied microphone permission, initial connection failure, mid-session disconnect/retry, mute/unmute, five-minute ending, keyboard navigation, mobile layout and 200% text zoom. Verify the microphone indicator disappears after ending a session. Inspect transcript behavior during interruption before trusting it as a definitive log.
 
 Automated coverage: immutable order transitions, totals, unavailable/unknown items, quantity limits, filter constraints, tool payload validation, missing credentials, origin/code checks, upstream failure handling, token-only responses, and the process-local burst limit.
+
+## Local verification completed
+
+- Seven automated tests pass.
+- Standard Next.js production build and its TypeScript check pass.
+- Production HTTP smoke checks pass for rendered page content, constrained menu queries, invalid filters, the local image asset, and the unconfigured-voice response.
+- Browser interaction, visual layout, live voice and optional browser-agent tool validation are not verified. The managed preview did not provide a working browser QA session.

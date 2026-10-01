@@ -8,7 +8,8 @@
 6. Ensure the client events include user transcription and agent response so the transcript is populated.
 7. Copy `.env.example` to `.env.local`. Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID`. Keep keys server-side. Never prefix them with `NEXT_PUBLIC_`.
 8. Optionally set `DEMO_ACCESS_CODE` for local development; it is required by this app when running with `NODE_ENV=production`. Enter that same code through the voice panel's access-code field. Do not put it in the repository.
-9. Restart the server, open the app on localhost, and click “Talk to the assistant”. Allow microphone access.
+9. If running behind a reverse proxy, set `APP_ORIGIN` to the exact browser origin (scheme, host and port, without a trailing slash). Otherwise the endpoint uses the direct Host header with the request scheme.
+10. Restart the server, open the app on localhost, and click “Talk to the assistant”. Allow microphone access.
 
 ## Client tools
 

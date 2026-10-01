@@ -6,7 +6,9 @@ let issued = 0;
 const response = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 export async function POST(request: Request) {
   const origin = request.headers.get('origin');
-  if (!origin || origin !== new URL(request.url).origin) return response({ error: 'Please start the session from this app.' }, 403);
+  const requestUrl = new URL(request.url);
+  const expectedOrigin = process.env.APP_ORIGIN || `${requestUrl.protocol}//${request.headers.get('host') || requestUrl.host}`;
+  if (!origin || origin !== expectedOrigin) return response({ error: 'Please start the session from this app.' }, 403);
   const key = process.env.ELEVENLABS_API_KEY;
   const agentId = process.env.ELEVENLABS_AGENT_ID;
   if (!key || !agentId) return response({ error: 'Voice is not configured yet. Add the ElevenLabs API key and agent ID on the server, then restart the app.' }, 503);

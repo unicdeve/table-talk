@@ -18,6 +18,7 @@ Open http://localhost:3000. Menu browsing and manual order editing work without 
 pnpm test
 pnpm typecheck
 pnpm build:next
+node scripts/smoke-next.mjs
 pnpm start:next
 ```
 

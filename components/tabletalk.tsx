@@ -40,9 +40,9 @@ export default function TableTalk() {
         <VoiceAssistant order={order} onUpdate={changeOrder} onHighlight={ids => { setHighlighted(ids); setCategory("All"); setVegetarian(false); }}/>
         <section className="order-panel" aria-labelledby="order-title"><div className="panel-heading"><h2 id="order-title"><ShoppingBag size={19}/> Your draft order <span className="count">{summary.count}</span></h2>{summary.count > 0 && <button className="clear-button" onClick={() => { orderRef.current = {}; setOrder({}); setNotice('Draft order cleared.'); }} aria-label="Clear draft order"><Trash2 size={16}/></button>}</div>
           {summary.items.length === 0 ? <div className="empty-order"><ShoppingBag size={27}/><p>A good meal starts here.</p><span>Add an item or ask the assistant.</span></div> : <ul className="order-list">{summary.items.map(item => <li key={item.id}><div><strong>{item.name}</strong><span>{money(item.subtotal)}</span></div><div className="quantity"><button aria-label={`Decrease ${item.name}`} onClick={() => changeOrder({ itemId: item.id, quantity: item.quantity - 1, action: 'set' })}><Minus size={13}/></button><span>{item.quantity}</span><button aria-label={`Increase ${item.name}`} onClick={() => changeOrder({ itemId: item.id, quantity: 1, action: 'add' })}><Plus size={13}/></button></div></li>)}</ul>}
-          <div className="order-total"><span>Subtotal</span><strong>{money(summary.total)}</strong></div><p className="order-footnote">Draft only. No payment or order will be placed.</p>
+          <div className="order-total"><span>Subtotal</span><strong>{money(summary.total)}</strong></div><p className="order-notice" role="status">{notice}</p><p className="order-footnote">Draft only. No payment or order will be placed.</p>
         </section>
       </aside>
-    </main><div className="sr-only" role="status">{notice}</div><footer className="app-footer">TableTalk <span>A voice-powered menu experiment by Taiwo Ogunola</span></footer>
+    </main><footer className="app-footer">TableTalk <span>A voice-powered menu experiment by Taiwo Ogunola</span></footer>
   </div>;
 }

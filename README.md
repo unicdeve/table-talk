@@ -1,6 +1,6 @@
 # TableTalk
 
-A React voice-agent demo for a fictional Lagos restaurant. Browse a menu, talk through preferences, see recommendations highlighted, and assemble a draft order through voice or manual controls. No real orders or payments are placed.
+A React voice-agent experiment for a fictional Lagos restaurant. Browse a menu, talk through preferences, see recommendations highlighted, and assemble a draft order through voice or manual controls. No real orders or payments are placed.
 
 ## Local development
 
@@ -60,11 +60,3 @@ The illustrative menu photo is sourced from the Dawa by Eric Adjepong listing on
 https://www.ubereats.com/store/dawa-by-eric-adjepong-elmina/_-6HULhLXLuJ-jWK60Y6eg
 Its reuse license has not been verified. Replace it with an owned/licensed image before public publication.
 
-## Git history
-
-Work is committed incrementally with Conventional Commit messages. To connect your empty GitHub repository later:
-
-```bash
-git remote add origin https://github.com/unicdeve/YOUR_REPO.git
-git push -u origin main
-```

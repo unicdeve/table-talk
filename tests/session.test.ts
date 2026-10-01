@@ -23,7 +23,9 @@ test('session route rejects cross-origin access and fails cleanly without creden
     assert.equal(missing.status, 503);
     assert.equal(missing.headers.get('cache-control'), 'no-store');
   } finally {
-    if (previous !== undefined) process.env.ELEVENLABS_API_KEY = previous;
+    if (previous !== undefined) {
+      process.env.ELEVENLABS_API_KEY = previous;
+    }
   }
 });
 test('session endpoint enforces its code, validates upstream responses and limits bursts', async () => {
@@ -68,8 +70,11 @@ test('session endpoint enforces its code, validates upstream responses and limit
       ['ELEVENLABS_AGENT_ID', saved.agent],
       ['DEMO_ACCESS_CODE', saved.code],
     ] as const) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
     }
   }
 });

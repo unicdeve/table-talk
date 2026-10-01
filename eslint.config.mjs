@@ -48,8 +48,12 @@ const eslintConfig = defineConfig([
     files: ['scripts/**', 'tests/**'],
     rules: { 'no-console': 'off' },
   },
-  // Must stay last: turns off stylistic rules that conflict with Prettier.
+  // Turns off stylistic rules that conflict with Prettier.
   prettier,
+  {
+    // Re-enabled after `prettier`, which turns it off. Compatible with Prettier in 'all' mode.
+    rules: { curly: ['error', 'all'] },
+  },
 ]);
 
 export default eslintConfig;

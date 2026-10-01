@@ -105,6 +105,7 @@ export type MenuFilters = {
 
 export function searchMenu(filters: MenuFilters) {
   const query = filters.query?.toLowerCase().trim() ?? '';
+  
   return menu.filter(
     (item) =>
       (!query || `${item.name} ${item.description}`.toLowerCase().includes(query)) &&

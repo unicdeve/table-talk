@@ -23,8 +23,9 @@ test('totals use menu prices and multiple item quantities', () => {
 test('rejects unknown items, unavailable items and invalid quantities', () => {
   assert.throws(() => updateOrder({}, { itemId: 'invented', action: 'add', quantity: 1 }));
   assert.throws(() => updateOrder({}, { itemId: 'fish', action: 'add', quantity: 1 }));
-  for (const quantity of [-1, 0.5, 21, NaN])
+  for (const quantity of [-1, 0.5, 21, NaN]) {
     assert.throws(() => updateOrder({}, { itemId: 'jollof', action: 'add', quantity }));
+  }
   assert.throws(() =>
     updateOrder({ jollof: 20 }, { itemId: 'jollof', action: 'add', quantity: 1 }),
   );

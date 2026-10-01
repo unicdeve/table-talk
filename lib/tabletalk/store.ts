@@ -56,7 +56,9 @@ export function createTableTalkStore() {
       state$.notice.set(message);
       return { success: false, error: message };
     }
+
     commitOrder(next, 'Draft order updated.');
+
     return { success: true, ...orderSummary(next) };
   }
 
@@ -89,5 +91,6 @@ function upsertMessage(current: TranscriptMessage[], next: TranscriptMessage) {
   const index = current.findIndex((item) => item.id === next.id);
   const messages =
     index >= 0 ? current.map((item, i) => (i === index ? next : item)) : [...current, next];
+    
   return messages.slice(-TRANSCRIPT_LIMIT);
 }

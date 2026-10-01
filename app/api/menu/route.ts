@@ -14,7 +14,11 @@ const filters = z.object({
 
 export function GET(request: Request) {
   const result = filters.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!result.success) return Response.json({ error: 'Invalid menu filters.' }, { status: 400 });
+
+  if (!result.success) {
+    return Response.json({ error: 'Invalid menu filters.' }, { status: 400 });
+  }
+
   return Response.json({
     items: searchMenu(result.data),
     currency: 'NGN',

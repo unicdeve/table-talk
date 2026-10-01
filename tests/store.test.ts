@@ -48,7 +48,9 @@ test('transcript replaces re-sent messages and keeps the latest 100', () => {
   assert.deepEqual(store.state$.voice.messages.get(), [
     { id: 'agent-1', role: 'agent', text: 'Hello' },
   ]);
-  for (let i = 0; i < 105; i++) store.receiveMessage({ id: `user-${i}`, role: 'user', text: 'Hi' });
+  for (let i = 0; i < 105; i++) {
+    store.receiveMessage({ id: `user-${i}`, role: 'user', text: 'Hi' });
+  }
   const messages = store.state$.voice.messages.get();
   assert.equal(messages.length, 100);
   assert.equal(messages.at(-1)?.id, 'user-104');

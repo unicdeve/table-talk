@@ -32,7 +32,9 @@ export default function VoiceAssistant({ className }: VoiceAssistantProps) {
   return (
     <ConversationProvider
       onMessage={({ message, role, event_id }) => {
-        if (!message.trim()) return;
+        if (!message.trim()) {
+          return;
+        }
         const id = event_id !== undefined ? `${role}-${event_id}` : crypto.randomUUID();
         receiveMessage({ id, role, text: message });
       }}
@@ -40,8 +42,9 @@ export default function VoiceAssistant({ className }: VoiceAssistantProps) {
         state$.voice.error.set('The voice connection failed. End the session and try again.')
       }
       onDisconnect={(details) => {
-        if (details.reason === 'error')
+        if (details.reason === 'error') {
           state$.voice.error.set('Voice disconnected unexpectedly. You can retry.');
+        }
       }}
     >
       <VoiceSurface className={className} />
@@ -71,32 +74,38 @@ function VoiceSurface({ className }: VoiceAssistantProps) {
 
   useConversationClientTool('highlight_items', (params: unknown) => {
     const parsed = highlightToolSchema.safeParse(params);
-    if (!parsed.success || !parsed.data.itemIds.every(isMenuItemId))
+    if (!parsed.success || !parsed.data.itemIds.every(isMenuItemId)) {
       return toolResult({
         success: false,
         error: 'Use only valid item IDs returned by search_menu.',
       });
+    }
     showRecommendations(parsed.data.itemIds);
     return toolResult({ success: true });
   });
 
   useConversationClientTool('update_draft_order', (params: unknown) => {
     const parsed = updateToolSchema.safeParse(params);
-    if (!parsed.success)
+    if (!parsed.success) {
       return toolResult({ success: false, error: 'Invalid item, action or quantity.' });
+    }
     return toolResult(changeOrder(parsed.data));
   });
 
   useEffect(() => {
-    if (!active) return;
-    
+    if (!active) {
+      return;
+    }
+
     sendContextualUpdate(
       `Current draft order: ${JSON.stringify(summary)}. Use these quantities as the source of truth. This update does not require a spoken response.`,
     );
   }, [summary, active, sendContextualUpdate]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       endSession();
@@ -109,11 +118,15 @@ function VoiceSurface({ className }: VoiceAssistantProps) {
   useEffect(() => {
     const element = transcriptRef.current;
 
-    if (element) element.scrollTop = element.scrollHeight;
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
   }, [messages]);
 
   async function start() {
-    if (busy || active) return;
+    if (busy || active) {
+      return;
+    }
 
     voice$.assign({ starting: true, error: '' });
     const session = await requestVoiceSession(voice$.accessCode.peek());
@@ -269,8 +282,12 @@ function statusLabel({
   isMuted: boolean;
   isSpeaking: boolean;
 }) {
-  if (!active) return busy ? 'Connecting…' : 'Ready when you are';
-  if (isMuted) return 'Microphone muted';
+  if (!active) {
+    return busy ? 'Connecting…' : 'Ready when you are';
+  }
+  if (isMuted) {
+    return 'Microphone muted';
+  }
   return isSpeaking ? 'Assistant speaking' : 'Listening to you';
 }
 
@@ -278,15 +295,22 @@ const toolResult = (value: unknown) => JSON.stringify(value);
 
 async function searchMenuTool(params: unknown) {
   const parsed = searchToolSchema.safeParse(params);
-  if (!parsed.success) return toolResult({ success: false, error: 'Invalid menu filters.' });
+  if (!parsed.success) {
+    return toolResult({ success: false, error: 'Invalid menu filters.' });
+  }
 
   const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(parsed.data))
-    if (value !== undefined) search.set(key, String(value));
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (value !== undefined) {
+      search.set(key, String(value));
+    }
+  }
 
   try {
     const response = await fetch(`/api/menu?${search}`, { signal: AbortSignal.timeout(8000) });
-    if (!response.ok) throw new Error('Menu search failed.');
+    if (!response.ok) {
+      throw new Error('Menu search failed.');
+    }
     return toolResult({ success: true, result: await response.json() });
   } catch {
     return toolResult({ success: false, error: 'Menu search is unavailable. Please retry.' });
@@ -301,8 +325,9 @@ const sessionResponseSchema = z.object({
 /** Fetches a conversation token and checks microphone access. Never throws. */
 async function requestVoiceSession(code: string): Promise<{ token: string } | { error: string }> {
   try {
-    if (!navigator.mediaDevices?.getUserMedia)
+    if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error('Voice needs microphone support on localhost or HTTPS.');
+    }
 
     const response = await fetch('/api/voice/session', {
       method: 'POST',
@@ -310,18 +335,20 @@ async function requestVoiceSession(code: string): Promise<{ token: string } | { 
       signal: AbortSignal.timeout(15_000),
     });
     const body = sessionResponseSchema.parse(await response.json());
-    if (!response.ok || !body.token)
+    if (!response.ok || !body.token) {
       throw new Error(body.error || 'Could not start a voice session.');
+    }
 
     const microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
     microphone.getTracks().forEach((track) => track.stop());
     return { token: body.token };
   } catch (failure) {
-    if (failure instanceof DOMException && failure.name === 'NotAllowedError')
+    if (failure instanceof DOMException && failure.name === 'NotAllowedError') {
       return {
         error:
           'Microphone access was denied. Allow it in your browser’s site settings, then retry.',
       };
+    }
     return {
       error: failure instanceof Error ? failure.message : 'Could not start voice. Please retry.',
     };

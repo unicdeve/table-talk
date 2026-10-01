@@ -13,7 +13,9 @@ const base = 'http://127.0.0.1:3000';
 try {
   let ready = false;
   for (let attempt = 0; attempt < 40; attempt++) {
-    if (server.exitCode !== null) throw new Error(output);
+    if (server.exitCode !== null) {
+      throw new Error(output);
+    }
     try {
       const response = await fetch(base, { signal: AbortSignal.timeout(1000) });
       if (response.ok) {

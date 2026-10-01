@@ -13,11 +13,15 @@ export async function POST(request: Request) {
   const expectedOrigin =
     process.env.APP_ORIGIN ||
     `${requestUrl.protocol}//${request.headers.get('host') || requestUrl.host}`;
-  if (!origin || origin !== expectedOrigin)
+
+  if (!origin || origin !== expectedOrigin) {
     return response({ error: 'Please start the session from this app.' }, 403);
+  }
+
   const key = process.env.ELEVENLABS_API_KEY;
   const agentId = process.env.ELEVENLABS_AGENT_ID;
-  if (!key || !agentId)
+
+  if (!key || !agentId) {
     return response(
       {
         error:
@@ -25,19 +29,29 @@ export async function POST(request: Request) {
       },
       503,
     );
+  }
   const accessCode = process.env.DEMO_ACCESS_CODE;
-  if (process.env.NODE_ENV === 'production' && !accessCode)
+
+  if (process.env.NODE_ENV === 'production' && !accessCode) {
     return response({ error: 'Voice access is not configured for this deployment.' }, 503);
-  if (accessCode && request.headers.get('x-demo-access-code') !== accessCode)
+  }
+
+  if (accessCode && request.headers.get('x-demo-access-code') !== accessCode) {
     return response({ error: 'Enter the correct demo access code.' }, 401);
+  }
+
   const now = Date.now();
   if (now - windowStart > 60_000) {
     windowStart = now;
     issued = 0;
   }
-  if (issued >= 5)
+
+  if (issued >= 5) {
     return response({ error: 'Too many session requests. Try again in a minute.' }, 429);
+  }
+
   issued++;
+
   try {
     const upstream = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${encodeURIComponent(agentId)}`,
@@ -47,7 +61,8 @@ export async function POST(request: Request) {
         signal: AbortSignal.timeout(10_000),
       },
     );
-    if (!upstream.ok)
+
+    if (!upstream.ok) {
       return response(
         {
           error:
@@ -55,12 +70,16 @@ export async function POST(request: Request) {
         },
         502,
       );
+    }
+
     const result = z.object({ token: z.string().min(1) }).safeParse(await upstream.json());
-    if (!result.success)
+    if (!result.success) {
       return response(
         { error: 'The voice service returned an invalid session. Please retry.' },
         502,
       );
+    }
+
     return response({ token: result.data.token });
   } catch {
     return response({ error: 'The voice service did not respond. Please retry.' }, 502);

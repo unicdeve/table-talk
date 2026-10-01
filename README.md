@@ -28,12 +28,16 @@ Production voice requires `DEMO_ACCESS_CODE`; configure it alongside the ElevenL
 
 ## Architecture
 
-- `components/tabletalk.tsx`: menu, filters and draft-order UI; a synchronous order ref prevents successive agent/manual updates from using stale state.
+- `components/tabletalk.tsx`: client workspace holding filter, highlight and draft-order state; renders `menu-section.tsx`, `order-panel.tsx` and the voice assistant. The static header and footer are server components.
+- `hooks/use-draft-order.ts`: draft-order state; changes build on the latest committed order so back-to-back agent tool calls never use stale state.
 - `components/voice-assistant.tsx`: ElevenLabs provider, granular SDK hooks, transcript, microphone controls, and registered client tools.
 - `lib/tabletalk/menu.ts`: canonical items, integer NGN prices, dietary tags and availability.
 - `lib/tabletalk/order.ts`: immutable order changes and deterministic totals. Agent-supplied prices are never accepted.
+- `app/globals.css`: Tailwind theme tokens (colours, orb shadow and animation) plus a small base layer; components are styled with Tailwind utilities.
 - `app/api/menu/route.ts`: validated menu search.
 - `app/api/voice/session/route.ts`: server-side WebRTC token issuance with origin checks, demo-code gate, timeout, no-store responses and process-local burst guard.
+
+React Compiler is enabled in `next.config.ts`, so components are memoized automatically; avoid manual `useMemo`/`useCallback` and keep throwing code out of component bodies so the compiler does not skip them.
 
 Client tools search the menu through our API, highlight item IDs, and update the same draft state used by manual controls. Current draft state is sent back to the agent after changes. Recommendations do not silently add items.
 

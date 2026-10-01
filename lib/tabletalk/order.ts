@@ -23,6 +23,8 @@ export function updateOrder(order: DraftOrder, update: OrderUpdate): DraftOrder 
   return next;
 }
 
+export type OrderSummary = ReturnType<typeof orderSummary>;
+
 export function orderSummary(order: DraftOrder) {
   const items = menu
     .filter((item) => order[item.id] > 0)

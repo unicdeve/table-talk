@@ -1,9 +1,13 @@
+export const categories = ['Mains', 'Sides', 'Drinks'] as const;
+
+export type Category = (typeof categories)[number];
+
 export type MenuItem = {
   id: string;
   name: string;
   description: string;
   price: number;
-  category: 'Mains' | 'Sides' | 'Drinks';
+  category: Category;
   vegetarian: boolean;
   available: boolean;
 };
@@ -94,7 +98,7 @@ export const menu: MenuItem[] = [
 
 export type MenuFilters = {
   query?: string;
-  category?: string;
+  category?: Category;
   vegetarian?: boolean;
   maxPrice?: number;
 };
@@ -110,9 +114,14 @@ export function searchMenu(filters: MenuFilters) {
   );
 }
 
-export const money = (value: number) =>
-  new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(value);
+export function isMenuItemId(id: string) {
+  return menu.some((item) => item.id === id);
+}
+
+const nairaFormatter = new Intl.NumberFormat('en-NG', {
+  style: 'currency',
+  currency: 'NGN',
+  maximumFractionDigits: 0,
+});
+
+export const money = (value: number) => nairaFormatter.format(value);

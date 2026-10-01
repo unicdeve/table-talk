@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
+import { categories } from './menu.ts';
+
 export const searchToolSchema = z
   .object({
     query: z.string().max(100).optional(),
     vegetarian: z.boolean().optional(),
     maxPrice: z.number().finite().nonnegative().optional(),
-    category: z.enum(['Mains', 'Sides', 'Drinks']).optional(),
+    category: z.enum(categories).optional(),
   })
   .strict();
 

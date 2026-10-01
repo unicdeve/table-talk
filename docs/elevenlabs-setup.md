@@ -16,9 +16,11 @@
 Names and parameter spelling are case-sensitive. `docs/agent-tools.json` provides reference JSON Schemas for the parameters; it is not an agent-import file.
 
 ### search_menu
+
 Description: Search the canonical restaurant menu before recommending or adding dishes. Return prices, item IDs, availability, and dietary tags. All supplied constraints are combined.
 
 All parameters are optional:
+
 - `query`: string, a short name or keyword. Omit for broad recommendations.
 - `vegetarian`: boolean. Use true for vegetarian requests.
 - `maxPrice`: number, maximum price per item in NGN, not the whole order budget.
@@ -27,6 +29,7 @@ All parameters are optional:
 Response: `{ success: true, result: { items, currency, allergenNotice } }`, or `{ success: false, error }`.
 
 ### highlight_items
+
 Description: Highlight the recommended menu items on screen. Use IDs returned by search_menu. Does not change the draft order. Send an empty array to clear highlights.
 
 Required parameter: `itemIds`, array of strings, at most nine entries.
@@ -34,9 +37,11 @@ Required parameter: `itemIds`, array of strings, at most nine entries.
 Response: `{ success: true }`, or `{ success: false, error }`.
 
 ### update_draft_order
+
 Description: Update the user's draft order after an explicit request. Wait for the result before confirming. No real order or payment is created.
 
 Required parameters:
+
 - `itemId`: string, an ID returned by search_menu.
 - `action`: string enum `add`, `set`, `remove`.
 - `quantity`: integer from 0 to 20. For add: amount to add. For set: desired final amount. For remove: use zero.
@@ -55,6 +60,7 @@ Response: `{ success: true, items, total, count, currency }`, or `{ success: fal
 The server's five-requests-per-minute guard is global to one process. It is not a distributed rate limiter. Before public deployment, add a shared limiter, set account/agent usage limits, and keep the demo access gate enabled. A client-side five-minute timer does not constrain a caller using a token outside this app.
 
 Official references:
+
 - https://elevenlabs.io/docs/eleven-agents/libraries/react
 - https://elevenlabs.io/docs/eleven-agents/customization/tools/client-tools
 - https://elevenlabs.io/docs/api-reference/conversations/get-webrtc-token

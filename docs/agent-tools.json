@@ -15,11 +15,7 @@
       },
       "category": {
         "type": "string",
-        "enum": [
-          "Mains",
-          "Sides",
-          "Drinks"
-        ]
+        "enum": ["Mains", "Sides", "Drinks"]
       }
     },
     "additionalProperties": false
@@ -35,9 +31,7 @@
         "maxItems": 9
       }
     },
-    "required": [
-      "itemIds"
-    ],
+    "required": ["itemIds"],
     "additionalProperties": false
   },
   "update_draft_order": {
@@ -48,11 +42,7 @@
       },
       "action": {
         "type": "string",
-        "enum": [
-          "add",
-          "set",
-          "remove"
-        ]
+        "enum": ["add", "set", "remove"]
       },
       "quantity": {
         "type": "integer",
@@ -60,11 +50,7 @@
         "maximum": 20
       }
     },
-    "required": [
-      "itemId",
-      "action",
-      "quantity"
-    ],
+    "required": ["itemId", "action", "quantity"],
     "additionalProperties": false
   }
 }

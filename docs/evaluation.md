@@ -26,4 +26,4 @@ Automated coverage: immutable order transitions, totals, unavailable/unknown ite
 - Seven automated tests pass.
 - Standard Next.js production build and its TypeScript check pass.
 - Production HTTP smoke checks pass for rendered page content, constrained menu queries, invalid filters, the local image asset, and the unconfigured-voice response.
-- Browser interaction, visual layout, live voice and optional browser-agent tool validation are not verified. The managed preview did not provide a working browser QA session.
+- Browser interaction, visual layout, live voice and optional browser-agent tool validation are not verified.

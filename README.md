@@ -4,12 +4,12 @@ A React voice-agent demo for a fictional Lagos restaurant. Browse a menu, talk t
 
 ## Local development
 
-Requires Node.js 22.13+ and pnpm. The portable Next.js commands are the recommended path on your own computer:
+Requires Node.js 22.13+ and pnpm.
 
 ```bash
 pnpm install
 cp .env.example .env.local
-pnpm dev:next
+pnpm dev
 ```
 
 Open http://localhost:3000. Menu browsing and manual order editing work without credentials. For live voice, follow [ElevenLabs setup](docs/elevenlabs-setup.md).
@@ -17,14 +17,13 @@ Open http://localhost:3000. Menu browsing and manual order editing work without 
 ```bash
 pnpm test
 pnpm typecheck
-pnpm build:next
-node scripts/smoke-next.mjs
-pnpm start:next
+pnpm lint
+pnpm build
+pnpm smoke
+pnpm start
 ```
 
 Production voice requires `DEMO_ACCESS_CODE`; configure it alongside the ElevenLabs server variables. Environment files are ignored except `.env.example`.
-
-The project retains the Sites starter's Vinext/Vite scripts for the managed workspace. `dev:next`, `build:next`, and `start:next` use standard Next.js. This version is local-only and has no configured Git remote.
 
 ## Architecture
 

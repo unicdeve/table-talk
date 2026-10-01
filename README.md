@@ -28,8 +28,8 @@ Production voice requires `DEMO_ACCESS_CODE`; configure it alongside the ElevenL
 
 ## Architecture
 
-- `components/tabletalk.tsx`: client workspace holding filter, highlight and draft-order state; renders `menu-section.tsx`, `order-panel.tsx` and the voice assistant. The static header and footer are server components.
-- `hooks/use-draft-order.ts`: draft-order state; changes build on the latest committed order so back-to-back agent tool calls never use stale state.
+- `components/tabletalk.tsx`: client workspace that creates the store and provides it to `menu-section.tsx`, `order-panel.tsx` and the voice assistant. The static header and footer are server components.
+- `lib/tabletalk/store.ts`: [Legend State](https://legendapp.com/open-source/state/v3/) store for the draft order, notice, menu filters, highlights and voice transcript, plus computed summary and filtered menu. Observables update synchronously, so back-to-back agent tool calls never use stale state. `hooks/use-tabletalk-store.ts` exposes it to components, which read it with `useValue`.
 - `components/voice-assistant.tsx`: ElevenLabs provider, granular SDK hooks, transcript, microphone controls, and registered client tools.
 - `lib/tabletalk/menu.ts`: canonical items, integer NGN prices, dietary tags and availability.
 - `lib/tabletalk/order.ts`: immutable order changes and deterministic totals. Agent-supplied prices are never accepted.

@@ -1,33 +1,22 @@
+import { useValue } from '@legendapp/state/react';
 import { Leaf, Plus, Sparkles, Utensils } from 'lucide-react';
 import Image from 'next/image';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { type Category, type MenuItem, categories, money } from '@/lib/tabletalk/menu';
+import { useTableTalkStore } from '@/hooks/use-tabletalk-store';
+import { type MenuItem, categories, money } from '@/lib/tabletalk/menu';
+import type { CategoryFilter } from '@/lib/tabletalk/store';
 import { cn } from '@/lib/utils';
-
-export type CategoryFilter = Category | 'All';
 
 const categoryFilters: CategoryFilter[] = ['All', ...categories];
 
-type MenuSectionProps = {
-  items: MenuItem[];
-  highlighted: string[];
-  category: CategoryFilter;
-  vegetarian: boolean;
-  onCategoryChange: (category: CategoryFilter) => void;
-  onVegetarianChange: (vegetarian: boolean) => void;
-  onAdd: (item: MenuItem) => void;
-};
+export function MenuSection() {
+  const { state$, menuItems$, changeOrder } = useTableTalkStore();
+  const items = useValue(menuItems$);
+  const highlighted = useValue(state$.menu.highlighted);
+  const category = useValue(state$.menu.category);
+  const vegetarian = useValue(state$.menu.vegetarian);
 
-export function MenuSection({
-  items,
-  highlighted,
-  category,
-  vegetarian,
-  onCategoryChange,
-  onVegetarianChange,
-  onAdd,
-}: MenuSectionProps) {
   return (
     <section aria-labelledby="menu-title">
       <div className="mb-6.5 flex items-center justify-between">
@@ -82,7 +71,7 @@ export function MenuSection({
                 category === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
               )}
               aria-pressed={category === value}
-              onClick={() => onCategoryChange(value)}
+              onClick={() => state$.menu.category.set(value)}
             >
               {value}
             </button>
@@ -91,7 +80,7 @@ export function MenuSection({
         <label className="flex cursor-pointer items-center gap-1.5 text-sm">
           <Checkbox
             checked={vegetarian}
-            onCheckedChange={(value) => onVegetarianChange(value === true)}
+            onCheckedChange={(value) => state$.menu.vegetarian.set(value === true)}
           />
           <Leaf size={15} /> Vegetarian
         </label>
@@ -103,7 +92,7 @@ export function MenuSection({
             key={item.id}
             item={item}
             recommended={highlighted.includes(item.id)}
-            onAdd={() => onAdd(item)}
+            onAdd={() => changeOrder({ itemId: item.id, quantity: 1, action: 'add' })}
           />
         ))}
       </div>

@@ -1,20 +1,17 @@
+import { useValue } from '@legendapp/state/react';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 
+import { useTableTalkStore } from '@/hooks/use-tabletalk-store';
 import { money } from '@/lib/tabletalk/menu';
-import type { OrderSummary, OrderUpdate } from '@/lib/tabletalk/order';
 import { cn } from '@/lib/utils';
-
-type OrderPanelProps = {
-  summary: OrderSummary;
-  notice: string;
-  onChange: (update: OrderUpdate) => void;
-  onClear: () => void;
-  className?: string;
-};
 
 const quantityButton = 'grid size-6.25 place-items-center rounded-md border border-border bg-white';
 
-export function OrderPanel({ summary, notice, onChange, onClear, className }: OrderPanelProps) {
+export function OrderPanel({ className }: { className?: string }) {
+  const { state$, summary$, changeOrder, clearOrder } = useTableTalkStore();
+  const summary = useValue(summary$);
+  const notice = useValue(state$.notice);
+
   return (
     <section
       className={cn('rounded-[15px] border border-border bg-white p-5.5', className)}
@@ -30,7 +27,7 @@ export function OrderPanel({ summary, notice, onChange, onClear, className }: Or
         {summary.count > 0 && (
           <button
             className="p-1 text-muted-foreground"
-            onClick={onClear}
+            onClick={clearOrder}
             aria-label="Clear draft order"
           >
             <Trash2 size={16} />
@@ -60,7 +57,7 @@ export function OrderPanel({ summary, notice, onChange, onClear, className }: Or
                   className={quantityButton}
                   aria-label={`Decrease ${item.name}`}
                   onClick={() =>
-                    onChange({ itemId: item.id, quantity: item.quantity - 1, action: 'set' })
+                    changeOrder({ itemId: item.id, quantity: item.quantity - 1, action: 'set' })
                   }
                 >
                   <Minus size={13} />
@@ -69,7 +66,7 @@ export function OrderPanel({ summary, notice, onChange, onClear, className }: Or
                 <button
                   className={quantityButton}
                   aria-label={`Increase ${item.name}`}
-                  onClick={() => onChange({ itemId: item.id, quantity: 1, action: 'add' })}
+                  onClick={() => changeOrder({ itemId: item.id, quantity: 1, action: 'add' })}
                 >
                   <Plus size={13} />
                 </button>

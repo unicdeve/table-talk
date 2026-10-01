@@ -8,12 +8,13 @@ import {
   useConversationMode,
   useConversationStatus,
 } from '@elevenlabs/react';
+import { useValue } from '@legendapp/state/react';
 import { AudioLines, Mic, MicOff, PhoneOff } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { z } from 'zod';
 
+import { useTableTalkStore } from '@/hooks/use-tabletalk-store';
 import { isMenuItemId } from '@/lib/tabletalk/menu';
-import { type DraftOrder, type OrderUpdate, orderSummary } from '@/lib/tabletalk/order';
 import {
   highlightToolSchema,
   searchToolSchema,
@@ -22,67 +23,44 @@ import {
 import { cn } from '@/lib/utils';
 
 const SESSION_LIMIT_MS = 5 * 60_000;
-const TRANSCRIPT_LIMIT = 100;
 
-type Message = { id: string; role: 'user' | 'agent'; text: string };
+type VoiceAssistantProps = { className?: string };
 
-type VoiceAssistantProps = {
-  order: DraftOrder;
-  onUpdate: (update: OrderUpdate) => unknown;
-  onHighlight: (ids: string[]) => void;
-  className?: string;
-};
-
-export default function VoiceAssistant(props: VoiceAssistantProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [error, setError] = useState('');
+export default function VoiceAssistant({ className }: VoiceAssistantProps) {
+  const { state$, receiveMessage } = useTableTalkStore();
 
   return (
     <ConversationProvider
       onMessage={({ message, role, event_id }) => {
         if (!message.trim()) return;
         const id = event_id !== undefined ? `${role}-${event_id}` : crypto.randomUUID();
-        setMessages((current) => upsertMessage(current, { id, role, text: message }));
+        receiveMessage({ id, role, text: message });
       }}
-      onError={() => setError('The voice connection failed. End the session and try again.')}
+      onError={() =>
+        state$.voice.error.set('The voice connection failed. End the session and try again.')
+      }
       onDisconnect={(details) => {
-        if (details.reason === 'error') setError('Voice disconnected unexpectedly. You can retry.');
+        if (details.reason === 'error')
+          state$.voice.error.set('Voice disconnected unexpectedly. You can retry.');
       }}
     >
-      <VoiceSurface
-        {...props}
-        messages={messages}
-        error={error}
-        setError={setError}
-        resetTranscript={() => setMessages([])}
-      />
+      <VoiceSurface className={className} />
     </ConversationProvider>
   );
 }
 
-type VoiceSurfaceProps = VoiceAssistantProps & {
-  messages: Message[];
-  error: string;
-  setError: (message: string) => void;
-  resetTranscript: () => void;
-};
-
-function VoiceSurface({
-  order,
-  onUpdate,
-  onHighlight,
-  className,
-  messages,
-  error,
-  setError,
-  resetTranscript,
-}: VoiceSurfaceProps) {
+function VoiceSurface({ className }: VoiceAssistantProps) {
+  const { state$, summary$, changeOrder, showRecommendations } = useTableTalkStore();
+  const voice$ = state$.voice;
+  const summary = useValue(summary$);
+  const messages = useValue(voice$.messages);
+  const error = useValue(voice$.error);
+  const starting = useValue(voice$.starting);
+  const code = useValue(voice$.accessCode);
   const { startSession, endSession, sendContextualUpdate } = useConversationControls();
   const { status } = useConversationStatus();
   const { isMuted, setMuted } = useConversationInput();
   const { isSpeaking } = useConversationMode();
-  const [starting, setStarting] = useState(false);
-  const [code, setCode] = useState('');
   const transcriptRef = useRef<HTMLDivElement>(null);
 
   const active = status === 'connected';
@@ -98,7 +76,7 @@ function VoiceSurface({
         success: false,
         error: 'Use only valid item IDs returned by search_menu.',
       });
-    onHighlight(parsed.data.itemIds);
+    showRecommendations(parsed.data.itemIds);
     return toolResult({ success: true });
   });
 
@@ -106,24 +84,24 @@ function VoiceSurface({
     const parsed = updateToolSchema.safeParse(params);
     if (!parsed.success)
       return toolResult({ success: false, error: 'Invalid item, action or quantity.' });
-    return toolResult(onUpdate(parsed.data));
+    return toolResult(changeOrder(parsed.data));
   });
 
   useEffect(() => {
     if (!active) return;
     sendContextualUpdate(
-      `Current draft order: ${JSON.stringify(orderSummary(order))}. Use these quantities as the source of truth. This update does not require a spoken response.`,
+      `Current draft order: ${JSON.stringify(summary)}. Use these quantities as the source of truth. This update does not require a spoken response.`,
     );
-  }, [order, active, sendContextualUpdate]);
+  }, [summary, active, sendContextualUpdate]);
 
   useEffect(() => {
     if (!active) return;
     const timer = setTimeout(() => {
       endSession();
-      setError('The five-minute demo session has ended. Start again to continue.');
+      voice$.error.set('The five-minute demo session has ended. Start again to continue.');
     }, SESSION_LIMIT_MS);
     return () => clearTimeout(timer);
-  }, [active, endSession, setError]);
+  }, [active, endSession, voice$]);
 
   useEffect(() => {
     const element = transcriptRef.current;
@@ -132,15 +110,14 @@ function VoiceSurface({
 
   async function start() {
     if (busy || active) return;
-    setStarting(true);
-    setError('');
-    const session = await requestVoiceSession(code);
-    setStarting(false);
+    voice$.assign({ starting: true, error: '' });
+    const session = await requestVoiceSession(voice$.accessCode.peek());
+    voice$.starting.set(false);
     if ('error' in session) {
-      setError(session.error);
+      voice$.error.set(session.error);
       return;
     }
-    resetTranscript();
+    voice$.messages.set([]);
     setMuted(false);
     startSession({ conversationToken: session.token, connectionType: 'webrtc' });
   }
@@ -194,7 +171,7 @@ function VoiceSurface({
             type="password"
             autoComplete="off"
             value={code}
-            onChange={(event) => setCode(event.target.value)}
+            onChange={(event) => voice$.accessCode.set(event.target.value)}
             className="w-full rounded-[7px] border border-input bg-white p-2 text-sm text-foreground"
           />
         </details>
@@ -291,14 +268,6 @@ function statusLabel({
   if (!active) return busy ? 'Connecting…' : 'Ready when you are';
   if (isMuted) return 'Microphone muted';
   return isSpeaking ? 'Assistant speaking' : 'Listening to you';
-}
-
-/** Replace a message that the SDK re-sent with the same event ID, otherwise append it. */
-function upsertMessage(current: Message[], next: Message) {
-  const index = current.findIndex((item) => item.id === next.id);
-  const messages =
-    index >= 0 ? current.map((item, i) => (i === index ? next : item)) : [...current, next];
-  return messages.slice(-TRANSCRIPT_LIMIT);
 }
 
 const toolResult = (value: unknown) => JSON.stringify(value);

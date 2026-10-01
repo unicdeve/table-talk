@@ -24,6 +24,7 @@ Before calling work done, run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pn
 ## Code conventions
 
 - **React Compiler is on** (`next.config.ts`). Don't add `useMemo`/`useCallback`/`React.memo` for performance. Keep throwing code and other compiler bailout patterns out of component bodies.
+- **Client state lives in Legend State** (`@legendapp/state` v3 beta, pinned). `lib/tabletalk/store.ts` creates one store per `<TableTalk>` mount, provided through `useTableTalkStore()`. Read observables in components with `useValue(obs$)` only. Don't use `observer()` or call `.get()` during render, because the compiler memoizes it and the component stops updating. Write with `.set()`/`.assign()` or a store action. Local `useState` is fine for state owned by a single component, and SDK state (ElevenLabs status, mute, speaking) stays in its own hooks.
 - **Styling is Tailwind v4 utilities.** Theme tokens live in `app/globals.css`; prefer tokens over raw colours. Use `cn()` from `@/lib/utils` to merge classes. shadcn (new-york) primitives go in `components/ui/`.
 - **Server components by default.** Only add `'use client'` where state, effects or browser APIs are needed (`tabletalk.tsx`, `voice-assistant.tsx` and their children).
 - **Imports:** use the `@/` alias across folders. Files under `lib/tabletalk/` import each other with explicit `.ts` extensions, because tests run them directly in Node with type stripping. Keep them free of path aliases and Node-incompatible TypeScript syntax (enums, namespaces, parameter properties).
@@ -34,7 +35,7 @@ Before calling work done, run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pn
 
 - `lib/tabletalk/menu.ts` is the single source of truth for items. Prices are integer NGN.
 - Order changes go through `updateOrder` in `lib/tabletalk/order.ts`, which is immutable. Totals are computed from the menu. Never accept prices from the agent.
-- `hooks/use-draft-order.ts` applies changes to the latest committed order so back-to-back agent tool calls don't read stale state. Keep it that way.
+- `changeOrder` in `lib/tabletalk/store.ts` reads the order with `peek()` and writes synchronously, so back-to-back agent tool calls never see stale state. Keep it that way, and don't route order changes through React state or effects. `tests/store.test.ts` covers this.
 - Recommendations highlight items. They never add items to the order silently.
 - Agent tool contracts are defined in three places that must stay in sync: `lib/tabletalk/tool-schemas.ts` (zod, runtime validation), `docs/agent-tools.json` (schemas pasted into ElevenLabs) and `docs/agent-prompt.md`. Changing a tool means updating all three and the tests.
 

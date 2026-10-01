@@ -89,6 +89,7 @@ function VoiceSurface({ className }: VoiceAssistantProps) {
 
   useEffect(() => {
     if (!active) return;
+    
     sendContextualUpdate(
       `Current draft order: ${JSON.stringify(summary)}. Use these quantities as the source of truth. This update does not require a spoken response.`,
     );
@@ -96,20 +97,24 @@ function VoiceSurface({ className }: VoiceAssistantProps) {
 
   useEffect(() => {
     if (!active) return;
+
     const timer = setTimeout(() => {
       endSession();
       voice$.error.set('The five-minute demo session has ended. Start again to continue.');
     }, SESSION_LIMIT_MS);
+
     return () => clearTimeout(timer);
   }, [active, endSession, voice$]);
 
   useEffect(() => {
     const element = transcriptRef.current;
+
     if (element) element.scrollTop = element.scrollHeight;
   }, [messages]);
 
   async function start() {
     if (busy || active) return;
+
     voice$.assign({ starting: true, error: '' });
     const session = await requestVoiceSession(voice$.accessCode.peek());
     voice$.starting.set(false);
@@ -118,7 +123,6 @@ function VoiceSurface({ className }: VoiceAssistantProps) {
       return;
     }
     voice$.messages.set([]);
-    setMuted(false);
     startSession({ conversationToken: session.token, connectionType: 'webrtc' });
   }
 

@@ -13,7 +13,7 @@
 
 ## Client tools
 
-Names and parameter spelling are case-sensitive. `docs/agent-tools.json` provides reference JSON Schemas for the parameters; it is not an agent-import file.
+Names and parameter spelling are case-sensitive. `docs/agent-tools.json` holds the full ElevenLabs client-tool config for each tool, with Wait for response (`expects_response`) on. It uses the API format, so it can't be pasted into the dashboard's JSON editor, which expects `parameters` as an array. Create each tool with `POST /v1/convai/tools` (body `{ tool_config, response_mocks }`), then add the returned IDs to the agent's `conversation_config.agent.prompt.tool_ids`. ElevenLabs tool parameters don't support numeric or length limits, so those are stated in the descriptions and enforced by the app.
 
 ### search_menu
 

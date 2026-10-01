@@ -1,56 +1,109 @@
-{
-  "search_menu": {
-    "type": "object",
-    "properties": {
-      "query": {
-        "type": "string",
-        "maxLength": 100
-      },
-      "vegetarian": {
-        "type": "boolean"
-      },
-      "maxPrice": {
-        "type": "number",
-        "minimum": 0
-      },
-      "category": {
-        "type": "string",
-        "enum": ["Mains", "Sides", "Drinks"]
-      }
-    },
-    "additionalProperties": false
-  },
-  "highlight_items": {
-    "type": "object",
-    "properties": {
-      "itemIds": {
-        "type": "array",
-        "items": {
-          "type": "string"
+[
+  {
+    "type": "client",
+    "name": "search_menu",
+    "description": "Search the canonical restaurant menu before recommending or adding dishes. Return prices, item IDs, availability, and dietary tags. All supplied constraints are combined.",
+    "expects_response": true,
+    "response_timeout_secs": 10,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "A short dish name or keyword, at most 100 characters. Omit for broad recommendations."
         },
-        "maxItems": 9
-      }
+        "vegetarian": {
+          "type": "boolean",
+          "description": "Use true for vegetarian requests. Omit otherwise."
+        },
+        "maxPrice": {
+          "type": "number",
+          "description": "Maximum price per item in NGN, not the whole order budget. Must be zero or more."
+        },
+        "category": {
+          "type": "string",
+          "description": "Menu category to search.",
+          "enum": ["Mains", "Sides", "Drinks"]
+        }
+      },
+      "required": []
     },
-    "required": ["itemIds"],
-    "additionalProperties": false
+    "dynamic_variables": {
+      "dynamic_variable_placeholders": {}
+    },
+    "assignments": [],
+    "interruption_mode": "allow",
+    "pre_tool_speech": "auto",
+    "tool_call_sound": null,
+    "tool_call_sound_behavior": "auto",
+    "execution_mode": "immediate",
+    "response_mocks": []
   },
-  "update_draft_order": {
-    "type": "object",
-    "properties": {
-      "itemId": {
-        "type": "string"
+  {
+    "type": "client",
+    "name": "highlight_items",
+    "description": "Highlight the recommended menu items on screen. Use IDs returned by search_menu. Does not change the draft order. Send an empty array to clear highlights.",
+    "expects_response": true,
+    "response_timeout_secs": 10,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "itemIds": {
+          "type": "array",
+          "description": "Item IDs returned by search_menu, at most nine.",
+          "items": {
+            "type": "string",
+            "description": "A menu item ID returned by search_menu."
+          }
+        }
       },
-      "action": {
-        "type": "string",
-        "enum": ["add", "set", "remove"]
-      },
-      "quantity": {
-        "type": "integer",
-        "minimum": 0,
-        "maximum": 20
-      }
+      "required": ["itemIds"]
     },
-    "required": ["itemId", "action", "quantity"],
-    "additionalProperties": false
+    "dynamic_variables": {
+      "dynamic_variable_placeholders": {}
+    },
+    "assignments": [],
+    "interruption_mode": "allow",
+    "pre_tool_speech": "auto",
+    "tool_call_sound": null,
+    "tool_call_sound_behavior": "auto",
+    "execution_mode": "immediate",
+    "response_mocks": []
+  },
+  {
+    "type": "client",
+    "name": "update_draft_order",
+    "description": "Update the user's draft order after an explicit request. Wait for the result before confirming. No real order or payment is created.",
+    "expects_response": true,
+    "response_timeout_secs": 10,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "An item ID returned by search_menu."
+        },
+        "action": {
+          "type": "string",
+          "description": "add adds the quantity, set sets the final quantity, remove deletes the item.",
+          "enum": ["add", "set", "remove"]
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Whole number from 0 to 20. For add: amount to add. For set: desired final amount. For remove: use 0."
+        }
+      },
+      "required": ["itemId", "action", "quantity"]
+    },
+    "dynamic_variables": {
+      "dynamic_variable_placeholders": {}
+    },
+    "assignments": [],
+    "interruption_mode": "allow",
+    "pre_tool_speech": "auto",
+    "tool_call_sound": null,
+    "tool_call_sound_behavior": "auto",
+    "execution_mode": "immediate",
+    "response_mocks": []
   }
-}
+]

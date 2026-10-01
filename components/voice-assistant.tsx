@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 import { ConversationProvider, useConversationControls, useConversationStatus, useConversationInput, useConversationMode, useConversationClientTool } from '@elevenlabs/react';
 import { AudioLines, Mic, MicOff, PhoneOff } from 'lucide-react';
 import { menu } from '@/lib/tabletalk/menu';
@@ -35,7 +36,7 @@ function VoiceSurface({ order, onUpdate, onHighlight, messages, error, setError,
   const transcriptRef = useRef<HTMLDivElement>(null);
   const startLock = useRef(false);
   const active = status === 'connected';
-  const busy = starting || status === 'connecting' || status === 'disconnecting';
+  const busy = starting || status === 'connecting';
   useConversationClientTool('search_menu', async (params: unknown) => {
     const parsed = searchToolSchema.safeParse(params);
     if (!parsed.success) return JSON.stringify({ success: false, error: 'Invalid menu filters.' });
@@ -44,7 +45,7 @@ function VoiceSurface({ order, onUpdate, onHighlight, messages, error, setError,
       Object.entries(parsed.data).forEach(([key, value]) => { if (value !== undefined) search.set(key, String(value)); });
       const result = await fetch(`/api/menu?${search}`, { signal: AbortSignal.timeout(8000) });
       if (!result.ok) throw new Error('Menu search failed.');
-      return JSON.stringify({ success: true, ...await result.json() });
+      return JSON.stringify({ success: true, result: await result.json() });
     } catch { return JSON.stringify({ success: false, error: 'Menu search is unavailable. Please retry.' }); }
   });
   useConversationClientTool('highlight_items', (params: unknown) => {
@@ -72,8 +73,8 @@ function VoiceSurface({ order, onUpdate, onHighlight, messages, error, setError,
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Voice needs microphone support on localhost or HTTPS.');
       const response = await fetch('/api/voice/session', { method: 'POST', headers: { 'x-demo-access-code': code }, signal: AbortSignal.timeout(15_000) });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error || 'Could not start a voice session.');
+      const body = z.object({ token: z.string().optional(), error: z.string().optional() }).parse(await response.json());
+      if (!response.ok || !body.token) throw new Error(body.error || 'Could not start a voice session.');
       const permission = await navigator.mediaDevices.getUserMedia({ audio: true });
       permission.getTracks().forEach(track => track.stop());
       resetTranscript(); setMuted(false);

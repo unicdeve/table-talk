@@ -1,0 +1,70 @@
+{
+  "search_menu": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "vegetarian": {
+        "type": "boolean"
+      },
+      "maxPrice": {
+        "type": "number",
+        "minimum": 0
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "Mains",
+          "Sides",
+          "Drinks"
+        ]
+      }
+    },
+    "additionalProperties": false
+  },
+  "highlight_items": {
+    "type": "object",
+    "properties": {
+      "itemIds": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 9
+      }
+    },
+    "required": [
+      "itemIds"
+    ],
+    "additionalProperties": false
+  },
+  "update_draft_order": {
+    "type": "object",
+    "properties": {
+      "itemId": {
+        "type": "string"
+      },
+      "action": {
+        "type": "string",
+        "enum": [
+          "add",
+          "set",
+          "remove"
+        ]
+      },
+      "quantity": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20
+      }
+    },
+    "required": [
+      "itemId",
+      "action",
+      "quantity"
+    ],
+    "additionalProperties": false
+  }
+}
